@@ -2,10 +2,8 @@
  * Uploads an image file to ImgBB and returns the hosted image URL.
  */
 export async function uploadImageToImgbb(file: File): Promise<string> {
-  const apiKey = process.env.NEXT_PUBLIC_IMGBB_KEY;
-  if (!apiKey) {
-    throw new Error("ImgBB API key is missing in .env");
-  }
+  const apiKey =
+    process.env.NEXT_PUBLIC_IMGBB_KEY || "df54a0de4af528fc92dee39b3ba9a42d";
 
   const formData = new FormData();
   formData.append("image", file);

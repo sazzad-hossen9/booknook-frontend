@@ -65,6 +65,7 @@ export function EditBookModal({
     const author = String(formValues.author || "").trim();
     const category = String(formValues.category || "Fiction").trim();
     const description = String(formValues.description || "").trim();
+    const manualImageUrl = String(formValues.imageUrl || "").trim();
 
     if (!title || !author || !description) {
       toast.error("Please fill in all required fields.");
@@ -73,7 +74,7 @@ export function EditBookModal({
 
     setSaving(true);
     try {
-      let finalImageUrl = book.image;
+      let finalImageUrl = manualImageUrl || book.image;
 
       if (newImageFile) {
         toast.loading("Uploading new cover image to ImgBB...", { id: "edit-progress" });
@@ -216,6 +217,19 @@ export function EditBookModal({
                   <option value="Kids">Kids</option>
                   <option value="Others">Others</option>
                 </select>
+              </div>
+
+              {/* Cover Image URL */}
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-foreground">
+                  Cover Image URL
+                </label>
+                <input
+                  name="imageUrl"
+                  type="url"
+                  defaultValue={book.image}
+                  className="h-[42px] w-full rounded-xl border border-border bg-card px-3.5 text-sm text-foreground outline-none focus:border-[#E0A526] transition-colors"
+                />
               </div>
 
               {/* Description */}

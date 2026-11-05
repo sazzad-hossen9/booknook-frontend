@@ -226,23 +226,6 @@ export function BookDetailsClient({ id }: BookDetailsClientProps) {
               )}
             </div>
 
-            {/* Borrow Action Button */}
-            <div>
-              <button
-                type="button"
-                disabled={!isAvailable}
-                onClick={() => setIsBorrowModalOpen(true)}
-                className="flex h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-[#E0A526] text-sm font-bold text-[#1F2A44] shadow-md transition-all duration-200 hover:bg-[#F2C45A] hover:shadow-lg active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <BookOpen className="h-4 w-4 stroke-[2.5]" />
-                <span>Borrow This Book</span>
-                <ArrowRight className="h-4 w-4 stroke-[2.5]" />
-              </button>
-              <p className="mt-2 text-center text-[11px] text-muted-foreground">
-                You can borrow this book and read it in your lounge.
-              </p>
-            </div>
-
             <div className="h-px w-full bg-border" />
 
             {/* Quick Info list */}

@@ -34,6 +34,7 @@ export function AddBookForm() {
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [imageUrlInput, setImageUrlInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -47,14 +48,28 @@ export function AddBookForm() {
     }
 
     setSelectedFile(file);
+    setImageUrlInput("");
     setPreviewUrl(URL.createObjectURL(file));
   };
 
   const handleClearImage = () => {
     setSelectedFile(null);
+    setImageUrlInput("");
     setPreviewUrl(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+  };
+
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setImageUrlInput(val);
+    if (val.trim().startsWith("http")) {
+      setSelectedFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      setPreviewUrl(val.trim());
+    } else if (!val.trim()) {
+      setPreviewUrl(null);
     }
   };
 
@@ -66,11 +81,6 @@ export function AddBookForm() {
       return;
     }
 
-    if (!selectedFile) {
-      toast.error("Please upload a book cover image.");
-      return;
-    }
-
     const formData = new FormData(e.currentTarget);
     const formValues = Object.fromEntries(formData.entries());
 
@@ -79,6 +89,12 @@ export function AddBookForm() {
     const category = String(formValues.category || "Fiction").trim();
     const copies = Number(formValues.copies) || 1;
     const description = String(formValues.description || "").trim();
+    const directUrl = String(formValues.imageUrl || imageUrlInput || "").trim();
+
+    if (!selectedFile && !directUrl) {
+      toast.error("Please upload a cover image or provide an image URL.");
+      return;
+    }
 
     if (!title || !author || !description) {
       toast.error("Please fill in all required fields.");
@@ -87,9 +103,13 @@ export function AddBookForm() {
 
     setSubmitting(true);
     try {
-      // Step 1: Upload image file to imgbb
-      toast.loading("Uploading book cover to ImgBB...", { id: "add-book-progress" });
-      const uploadedImageUrl = await uploadImageToImgbb(selectedFile);
+      let uploadedImageUrl = directUrl;
+
+      // Upload image to ImgBB if a local file was selected
+      if (selectedFile) {
+        toast.loading("Uploading book cover to ImgBB...", { id: "add-book-progress" });
+        uploadedImageUrl = await uploadImageToImgbb(selectedFile);
+      }
 
       // Step 2: Post to backend with the hosted image URL and JWT
       toast.loading("Adding book to library...", { id: "add-book-progress" });
@@ -224,22 +244,25 @@ export function AddBookForm() {
 
         {/* Right Column: Image Uploader & Read-Only User Info */}
         <div className="space-y-5">
-          {/* Book Image Upload Area */}
-          <div className="space-y-1.5">
+          {/* Book Image Upload Area & URL Option */}
+          <div className="space-y-3">
             <label className="flex items-center gap-2 text-xs font-semibold text-foreground">
               <UploadCloud className="h-4 w-4 text-[#E0A526]" />
-              <span>Book Image</span>
+              <span>Book Cover Image</span>
             </label>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 rounded-2xl border-2 border-dashed border-border bg-[#FAF7F2] dark:bg-[#111624] p-5 text-center">
               {/* Preview or Drop Area */}
               {previewUrl ? (
                 <div className="relative aspect-[3/4] w-28 shrink-0 overflow-hidden rounded-xl border border-border shadow-md">
-                  <Image
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={previewUrl}
                     alt="Cover preview"
-                    fill
-                    className="object-cover"
+                    className="h-full w-full object-cover"
+                    onError={() => {
+                      toast.error("Failed to load image from preview URL");
+                    }}
                   />
                   <button
                     type="button"
@@ -255,10 +278,10 @@ export function AddBookForm() {
                     <UploadCloud className="h-6 w-6 stroke-[1.8]" />
                   </div>
                   <h4 className="mt-3 font-serif text-base font-bold text-foreground">
-                    Drop your book cover here
+                    Upload or browse cover
                   </h4>
                   <p className="text-xs text-muted-foreground mt-1">
-                    PNG, JPG or WEBP (recommended 3:4 ratio, max 2MB)
+                    PNG, JPG or WEBP (max 2MB)
                   </p>
                   <div className="mt-4">
                     <button
@@ -289,6 +312,21 @@ export function AddBookForm() {
               onChange={handleFileChange}
               className="hidden"
             />
+
+            {/* Direct Image URL input */}
+            <div className="space-y-1">
+              <span className="text-[11px] font-semibold text-muted-foreground block">
+                OR Paste Image URL directly:
+              </span>
+              <input
+                type="url"
+                name="imageUrl"
+                value={imageUrlInput}
+                onChange={handleUrlChange}
+                placeholder="https://images.unsplash.com/... or hosted image URL"
+                className="h-[40px] w-full rounded-xl border border-border bg-card px-3 text-xs text-foreground outline-none focus:border-[#E0A526] transition-colors placeholder:text-muted-foreground"
+              />
+            </div>
           </div>
 
           {/* Added By (Read Only) */}
