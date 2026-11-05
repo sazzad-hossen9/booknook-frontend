@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen } from "lucide-react";
+import Image from "next/image";
 
 interface LogoProps {
   className?: string;
@@ -7,30 +7,51 @@ interface LogoProps {
 }
 
 /**
- * Official BookNook Logo built with Lucide-react BookOpen icon and Playfair typography.
+ * Official BookNook Logo component rendered from the custom brand graphic.
+ * Adapts between light and dark modes with transparent background.
  */
 export function Logo({ className = "", isFooter = false }: LogoProps) {
+  if (isFooter) {
+    return (
+      <Link
+        href="/"
+        className={`inline-flex items-center transition-transform hover:scale-[1.02] active:scale-[0.98] ${className}`}
+      >
+        <Image
+          src="/images/logo-dark.png"
+          alt="BookNook"
+          width={170}
+          height={36}
+          priority
+          className="h-9 w-auto object-contain"
+        />
+      </Link>
+    );
+  }
+
   return (
     <Link
       href="/"
-      className={`inline-flex items-center gap-2.5 transition-transform hover:scale-[1.02] active:scale-[0.98] ${className}`}
+      className={`inline-flex items-center transition-transform hover:scale-[1.02] active:scale-[0.98] ${className}`}
     >
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#1F2A44] shadow-sm border border-[#E0A526]/30">
-        <BookOpen className="h-5 w-5 text-[#E0A526]" strokeWidth={2.2} />
-      </div>
-      <div className="flex items-baseline font-serif text-2xl font-bold tracking-tight">
-        <span
-          className={
-            isFooter
-              ? "text-white"
-              : "text-[#1F2A44] dark:text-[#F3EFE6]"
-          }
-        >
-          Book
-        </span>
-        <span className="text-[#E0A526]">Nook</span>
-      </div>
+      {/* Light mode brand logo */}
+      <Image
+        src="/images/logo.png"
+        alt="BookNook"
+        width={170}
+        height={36}
+        priority
+        className="h-9 sm:h-10 w-auto object-contain dark:hidden"
+      />
+      {/* Dark mode brand logo */}
+      <Image
+        src="/images/logo-dark.png"
+        alt="BookNook"
+        width={170}
+        height={36}
+        priority
+        className="h-9 sm:h-10 w-auto object-contain hidden dark:block"
+      />
     </Link>
   );
 }
-
