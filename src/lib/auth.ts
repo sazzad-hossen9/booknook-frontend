@@ -7,6 +7,20 @@ const client = new MongoClient(process.env.MONGODB_URI || "");
 const db = client.db("booknook");
 
 export const auth = betterAuth({
+  baseURL:
+    process.env.BETTER_AUTH_URL ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "http://localhost:3000"),
+  trustedOrigins: [
+    "http://localhost:3000",
+    "http://localhost:5000",
+    "https://booknook-sazzad-hossen.vercel.app",
+    "https://booknook-pearl.vercel.app",
+    "https://*.vercel.app",
+  ],
   database: mongodbAdapter(db, {
     client,
   }),

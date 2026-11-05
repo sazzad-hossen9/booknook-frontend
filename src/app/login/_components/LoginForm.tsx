@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
-import { authClient } from "@/lib/auth-client";
+import { authClient, signIn } from "@/lib/auth-client";
 import { Mail, Lock, Eye, EyeOff, LogIn, Loader2, Check } from "lucide-react";
 import { toast } from "sonner";
 
@@ -66,9 +66,12 @@ export function LoginForm() {
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     try {
-      await authClient.signIn.social({
+      await signIn.social({
         provider: "google",
-        callbackURL: window.location.origin + redirectTarget,
+        callbackURL:
+          redirectTarget && redirectTarget.startsWith("/")
+            ? redirectTarget
+            : "/",
       });
     } catch (err: any) {
       toast.error(err?.message || "Google sign-in failed. Please try again.");

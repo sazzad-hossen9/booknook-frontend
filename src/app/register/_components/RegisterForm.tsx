@@ -121,7 +121,7 @@ export function RegisterForm() {
     try {
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: window.location.origin + "/",
+        callbackURL: "/",
       });
     } catch (err: any) {
       toast.error(err?.message || "Google sign-in failed");
@@ -157,7 +157,7 @@ export function RegisterForm() {
             <User className="absolute left-3.5 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
-              placeholder="e.g. Sazzad Islam"
+              placeholder="Enter your  name "
               {...register("name")}
               className="h-[46px] w-full rounded-xl border border-border bg-card pl-10 pr-4 text-sm text-foreground outline-none focus:border-[#E0A526] focus:ring-2 focus:ring-[#E0A526]/20 placeholder:text-muted-foreground"
             />
@@ -176,7 +176,7 @@ export function RegisterForm() {
             <Mail className="absolute left-3.5 h-4 w-4 text-muted-foreground" />
             <input
               type="email"
-              placeholder="e.g. sazzad@example.com"
+              placeholder="Enter your email"
               {...register("email")}
               className="h-[46px] w-full rounded-xl border border-border bg-card pl-10 pr-4 text-sm text-foreground outline-none focus:border-[#E0A526] focus:ring-2 focus:ring-[#E0A526]/20 placeholder:text-muted-foreground"
             />
@@ -232,7 +232,7 @@ export function RegisterForm() {
             <Lock className="absolute left-3.5 h-4 w-4 text-muted-foreground" />
             <input
               type={showPassword ? "text" : "password"}
-              placeholder="••••••••••••"
+              placeholder="Enter your  password"
               {...register("password")}
               className="h-[46px] w-full rounded-xl border border-border bg-card pl-10 pr-10 text-sm text-foreground outline-none focus:border-[#E0A526] focus:ring-2 focus:ring-[#E0A526]/20 placeholder:text-muted-foreground"
             />
