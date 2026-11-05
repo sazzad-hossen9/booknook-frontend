@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "motion/react";
 import { Book, API_URL } from "@/types";
 import { BorrowModal } from "./BorrowModal";
 import { Spinner } from "@/components/Spinner";
@@ -108,7 +109,12 @@ export function BookDetailsClient({ id }: BookDetailsClientProps) {
       </nav>
 
       {/* Main Book Detail Card */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 rounded-[24px] border border-border bg-card p-6 sm:p-10 shadow-sm">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="grid grid-cols-1 lg:grid-cols-12 gap-8 rounded-[24px] border border-border bg-card p-6 sm:p-10 shadow-sm"
+      >
         {/* Left Column: Book Cover */}
         <div className="lg:col-span-4 flex justify-center lg:justify-start">
           <div className="relative aspect-[3/4] w-full max-w-[320px] overflow-hidden rounded-2xl shadow-xl border border-border/50">
@@ -181,16 +187,18 @@ export function BookDetailsClient({ id }: BookDetailsClientProps) {
 
             {/* Borrow This Book button right after Description */}
             <div className="pt-3">
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 type="button"
                 disabled={!isAvailable}
                 onClick={() => setIsBorrowModalOpen(true)}
-                className="inline-flex h-[46px] items-center justify-center gap-2.5 rounded-xl bg-[#E0A526] px-6 text-sm font-bold text-[#1F2A44] shadow-md transition-all duration-200 hover:bg-[#F2C45A] hover:shadow-lg active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                className="inline-flex h-[46px] items-center justify-center gap-2.5 rounded-xl bg-[#E0A526] px-6 text-sm font-bold text-[#1F2A44] shadow-md transition-colors hover:bg-[#F2C45A] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 <BookOpen className="h-4 w-4 stroke-[2.5]" />
                 <span>Borrow This Book</span>
                 <ArrowRight className="h-4 w-4 stroke-[2.5]" />
-              </button>
+              </motion.button>
             </div>
           </div>
 
@@ -265,7 +273,7 @@ export function BookDetailsClient({ id }: BookDetailsClientProps) {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Borrow Modal Dialog */}
       <BorrowModal

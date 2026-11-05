@@ -1,3 +1,6 @@
+"use client";
+
+import { motion } from "motion/react";
 import { SectionHeading } from "@/components/SectionHeading";
 import { BookPlus, BookOpenCheck, RotateCcw, ArrowRight } from "lucide-react";
 
@@ -24,10 +27,17 @@ const steps = [
 
 /**
  * How Borrowing Works section illustrating the 3 easy steps.
+ * Features whileInView entrance and subtle card hover/tap interactions.
  */
 export function HowItWorks() {
   return (
-    <section className="mx-auto max-w-[1200px] px-4 sm:px-6 py-16">
+    <motion.section
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6 }}
+      className="mx-auto max-w-[1200px] px-4 sm:px-6 py-16"
+    >
       <SectionHeading
         title="How Borrowing Works"
         subtitle="It's simple! Just follow these steps."
@@ -37,8 +47,17 @@ export function HowItWorks() {
         {steps.map((item, index) => {
           const Icon = item.icon;
           return (
-            <div key={item.step} className="relative flex">
-              <div className="flex w-full flex-col items-start rounded-[16px] border border-border bg-card p-6 shadow-xs transition-all hover:shadow-md">
+            <motion.div
+              key={item.step}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="relative flex"
+            >
+              <div className="flex w-full flex-col items-start rounded-[16px] border border-border bg-card p-6 shadow-xs transition-shadow hover:shadow-md">
                 {/* Step badge */}
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#E0A526] text-xs font-bold text-[#1F2A44] shadow-xs">
                   {item.step}
@@ -65,11 +84,10 @@ export function HowItWorks() {
                   <ArrowRight className="h-3.5 w-3.5 text-[#E0A526]" />
                 </div>
               )}
-            </div>
+            </motion.div>
           );
         })}
       </div>
-    </section>
+    </motion.section>
   );
 }
-

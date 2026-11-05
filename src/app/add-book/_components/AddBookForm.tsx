@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { motion } from "motion/react";
 import { authClient } from "@/lib/auth-client";
 import { API_URL } from "@/types";
 import { uploadImageToImgbb } from "@/lib/upload-image";
@@ -150,7 +151,10 @@ export function AddBookForm() {
   };
 
   return (
-    <form
+    <motion.form
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
       onSubmit={handleSubmit}
       className="rounded-[24px] border border-border bg-card p-6 sm:p-10 shadow-sm"
     >
@@ -367,10 +371,12 @@ export function AddBookForm() {
 
       {/* Submit Button */}
       <div className="mt-8 pt-4 border-t border-border">
-        <button
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           type="submit"
           disabled={submitting}
-          className="flex h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-[#1F2A44] dark:bg-[#E0A526] text-sm font-semibold text-white dark:text-[#0F1420] shadow-sm transition-all duration-200 hover:bg-[#293757] dark:hover:bg-[#F2C45A] active:scale-[0.99] disabled:opacity-60 cursor-pointer"
+          className="flex h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-[#1F2A44] dark:bg-[#E0A526] text-sm font-semibold text-white dark:text-[#0F1420] shadow-sm transition-colors duration-200 hover:bg-[#293757] dark:hover:bg-[#F2C45A] disabled:opacity-60 cursor-pointer"
         >
           {submitting ? (
             <>
@@ -383,8 +389,8 @@ export function AddBookForm() {
               <span>Add Book</span>
             </>
           )}
-        </button>
+        </motion.button>
       </div>
-    </form>
+    </motion.form>
   );
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { motion } from "motion/react";
 import { authClient } from "@/lib/auth-client";
 import { Mail, Lock, Eye, EyeOff, LogIn, Loader2, Check } from "lucide-react";
 import { toast } from "sonner";
@@ -77,7 +78,12 @@ export function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="w-full max-w-md mx-auto space-y-6"
+    >
       {/* Header */}
       <div className="space-y-1 text-center sm:text-left">
         <h2 className="font-serif text-3xl font-bold tracking-tight text-foreground">
@@ -184,10 +190,12 @@ export function LoginForm() {
         </div>
 
         {/* Submit Button */}
-        <button
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           type="submit"
           disabled={loading}
-          className="flex h-[46px] w-full items-center justify-center gap-2 rounded-xl bg-[#E0A526] text-sm font-semibold text-[#1F2A44] shadow-md transition-all duration-200 hover:bg-[#F2C45A] hover:shadow-lg active:scale-[0.99] disabled:opacity-60"
+          className="flex h-[46px] w-full items-center justify-center gap-2 rounded-xl bg-[#E0A526] text-sm font-semibold text-[#1F2A44] shadow-md transition-colors duration-200 hover:bg-[#F2C45A] hover:shadow-lg disabled:opacity-60 cursor-pointer"
         >
           {loading ? (
             <>
@@ -200,7 +208,7 @@ export function LoginForm() {
               <span>Login</span>
             </>
           )}
-        </button>
+        </motion.button>
       </form>
 
       {/* OR Divider */}
@@ -212,11 +220,13 @@ export function LoginForm() {
       </div>
 
       {/* Continue with Google */}
-      <button
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
         type="button"
         disabled={googleLoading}
         onClick={handleGoogleLogin}
-        className="flex h-[46px] w-full items-center justify-center gap-3 rounded-xl border border-border bg-card text-sm font-medium text-foreground shadow-xs transition-all hover:bg-muted active:scale-[0.99]"
+        className="flex h-[46px] w-full items-center justify-center gap-3 rounded-xl border border-border bg-card text-sm font-medium text-foreground shadow-xs transition-colors hover:bg-muted cursor-pointer"
       >
         {googleLoading ? (
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -241,7 +251,7 @@ export function LoginForm() {
           </svg>
         )}
         <span>Continue with Google</span>
-      </button>
+      </motion.button>
 
       {/* Switch to Register */}
       <p className="text-center text-xs text-muted-foreground">
@@ -257,6 +267,6 @@ export function LoginForm() {
           Register here
         </Link>
       </p>
-    </div>
+    </motion.div>
   );
 }

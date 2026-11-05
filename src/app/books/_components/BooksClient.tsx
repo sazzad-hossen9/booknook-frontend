@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { motion } from "motion/react";
 import { Book, API_URL } from "@/types";
 import { BookCard } from "@/components/BookCard";
 import { BookFilter } from "./BookFilter";
@@ -84,7 +85,12 @@ export function BooksClient() {
   return (
     <div className="space-y-10">
       {/* Page Header */}
-      <div className="text-center space-y-3">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="text-center space-y-3"
+      >
         <span className="inline-block rounded-full bg-[#2F7D6D]/10 px-3.5 py-1 text-xs font-semibold tracking-wider text-[#2F7D6D] uppercase">
           THE COMMUNITY SHELVES
         </span>
@@ -94,7 +100,7 @@ export function BooksClient() {
         <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto">
           Explore our collection of amazing books across all genres.
         </p>
-      </div>
+      </motion.div>
 
       {/* Search & Filter Bar */}
       <BookFilter

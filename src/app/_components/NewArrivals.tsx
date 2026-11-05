@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { motion } from "motion/react";
 import { Book, API_URL } from "@/types";
 import { BookCard } from "@/components/BookCard";
 import { SectionHeading } from "@/components/SectionHeading";
@@ -10,6 +11,7 @@ import { ArrowRight, BookOpen } from "lucide-react";
 
 /**
  * New Arrivals section displaying the 6 most recently added books.
+ * Includes smooth whileInView section entrance and interactive button scaling.
  */
 export function NewArrivals() {
   const [books, setBooks] = useState<Book[]>([]);
@@ -18,7 +20,9 @@ export function NewArrivals() {
   useEffect(() => {
     async function loadNewBooks() {
       try {
-        const res = await fetch(`${API_URL}/books?sort=newest&limit=6`, { cache: "no-store" });
+        const res = await fetch(`${API_URL}/books?sort=newest&limit=12`, {
+          cache: "no-store",
+        });
         const data = await res.json();
         setBooks(Array.isArray(data) ? data : []);
       } catch (err) {
@@ -31,7 +35,13 @@ export function NewArrivals() {
   }, []);
 
   return (
-    <section className="mx-auto max-w-[1200px] px-4 sm:px-6 py-16">
+    <motion.section
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6 }}
+      className="mx-auto max-w-[1200px] px-4 sm:px-6 py-16"
+    >
       <SectionHeading
         title="New Arrivals"
         subtitle="Explore our latest collection of amazing books."
@@ -67,28 +77,39 @@ export function NewArrivals() {
             Be the first reader to add a book to our community shelves!
           </p>
           <div className="mt-6">
-            <Link
-              href="/add-book"
-              className="inline-flex items-center gap-2 rounded-xl bg-[#E0A526] px-5 py-2.5 text-sm font-semibold text-[#1F2A44]"
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="inline-block"
             >
-              Add a Book
-            </Link>
+              <Link
+                href="/add-book"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#E0A526] px-5 py-2.5 text-sm font-semibold text-[#1F2A44]"
+              >
+                Add a Book
+              </Link>
+            </motion.div>
           </div>
         </div>
       )}
 
       {/* Button to see all books */}
       <div className="mt-12 text-center">
-        <Link
-          href="/books"
-          className="inline-flex items-center gap-2.5 rounded-full bg-[#1F2A44] dark:bg-[#E0A526] px-7 py-3 text-sm font-semibold text-white dark:text-[#0F1420] shadow-sm transition-all duration-300 hover:bg-[#28385C] dark:hover:bg-[#F2C45A] hover:shadow-md active:scale-95"
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="inline-block"
         >
-          <BookOpen className="h-4 w-4" />
-          <span>See All Books</span>
-          <ArrowRight className="h-4 w-4" />
-        </Link>
+          <Link
+            href="/books"
+            className="inline-flex items-center gap-2.5 rounded-full bg-[#1F2A44] dark:bg-[#E0A526] px-7 py-3 text-sm font-semibold text-white dark:text-[#0F1420] shadow-sm transition-colors duration-300 hover:bg-[#28385C] dark:hover:bg-[#F2C45A] hover:shadow-md"
+          >
+            <BookOpen className="h-4 w-4" />
+            <span>See All Books</span>
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </motion.div>
       </div>
-    </section>
+    </motion.section>
   );
 }
-

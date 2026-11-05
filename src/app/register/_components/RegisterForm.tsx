@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -130,7 +131,12 @@ export function RegisterForm() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="w-full max-w-md mx-auto space-y-6"
+    >
       {/* Header */}
       <div className="space-y-1 text-center sm:text-left">
         <h2 className="font-serif text-3xl font-bold tracking-tight text-foreground">
@@ -317,10 +323,12 @@ export function RegisterForm() {
         </div>
 
         {/* Submit Button */}
-        <button
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           type="submit"
           disabled={loading || googleLoading}
-          className="flex h-[46px] w-full items-center justify-center gap-2 rounded-xl bg-[#E0A526] text-sm font-semibold text-[#1F2A44] shadow-md hover:bg-[#F2C45A] active:scale-[0.99] disabled:opacity-60 transition-all cursor-pointer mt-2"
+          className="flex h-[46px] w-full items-center justify-center gap-2 rounded-xl bg-[#E0A526] text-sm font-semibold text-[#1F2A44] shadow-md hover:bg-[#F2C45A] disabled:opacity-60 transition-colors cursor-pointer mt-2"
         >
           {loading ? (
             <>
@@ -333,7 +341,7 @@ export function RegisterForm() {
               <span>Register Account</span>
             </>
           )}
-        </button>
+        </motion.button>
 
         {/* Divider */}
         <div className="relative py-2 text-center text-xs text-muted-foreground after:absolute after:inset-x-0 after:top-1/2 after:h-px after:bg-border">
@@ -341,11 +349,13 @@ export function RegisterForm() {
         </div>
 
         {/* Google Register Button */}
-        <button
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           type="button"
           onClick={handleGoogleRegister}
           disabled={loading || googleLoading}
-          className="flex h-[46px] w-full items-center justify-center gap-2.5 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground shadow-xs hover:bg-muted active:scale-[0.99] transition-all cursor-pointer"
+          className="flex h-[46px] w-full items-center justify-center gap-2.5 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground shadow-xs hover:bg-muted transition-colors cursor-pointer"
         >
           {googleLoading ? (
             <>
@@ -375,7 +385,7 @@ export function RegisterForm() {
               <span>Continue with Google</span>
             </>
           )}
-        </button>
+        </motion.button>
 
         {/* Link to Login */}
         <p className="text-center text-xs text-muted-foreground pt-1">
@@ -388,6 +398,6 @@ export function RegisterForm() {
           </Link>
         </p>
       </form>
-    </div>
+    </motion.div>
   );
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
 import {
   Mail,
   Lock,
@@ -96,7 +97,12 @@ export function ForgotPasswordForm() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="w-full max-w-md mx-auto space-y-6"
+    >
       {/* Header */}
       <div className="space-y-1 text-center sm:text-left">
         <div className="mb-2 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#E0A526]/15 text-[#E0A526]">
@@ -248,10 +254,12 @@ export function ForgotPasswordForm() {
         </div>
 
         {/* Submit Button */}
-        <button
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           type="submit"
           disabled={loading}
-          className="flex h-[46px] w-full items-center justify-center gap-2 rounded-xl bg-[#E0A526] text-sm font-semibold text-[#1F2A44] shadow-md hover:bg-[#F2C45A] active:scale-[0.99] disabled:opacity-60 transition-all cursor-pointer mt-2"
+          className="flex h-[46px] w-full items-center justify-center gap-2 rounded-xl bg-[#E0A526] text-sm font-semibold text-[#1F2A44] shadow-md hover:bg-[#F2C45A] disabled:opacity-60 transition-colors cursor-pointer mt-2"
         >
           {loading ? (
             <>
@@ -264,7 +272,7 @@ export function ForgotPasswordForm() {
               <span>Reset & Update Password</span>
             </>
           )}
-        </button>
+        </motion.button>
 
         {/* Back to Login Link */}
         <div className="pt-2 text-center">
@@ -277,6 +285,6 @@ export function ForgotPasswordForm() {
           </Link>
         </div>
       </form>
-    </div>
+    </motion.div>
   );
 }

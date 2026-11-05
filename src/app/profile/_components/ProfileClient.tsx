@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion } from "motion/react";
 import { authClient } from "@/lib/auth-client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -36,7 +37,12 @@ export function ProfileClient() {
   return (
     <div className="mx-auto max-w-2xl space-y-8">
       {/* Profile Card */}
-      <div className="rounded-[24px] border border-border bg-card p-8 sm:p-10 shadow-sm text-center sm:text-left">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="rounded-[24px] border border-border bg-card p-8 sm:p-10 shadow-sm text-center sm:text-left"
+      >
         <div className="flex flex-col sm:flex-row items-center gap-6">
           {/* Avatar with gold ring */}
           <Avatar className="h-24 w-24 border-2 border-[#E0A526] shadow-md">
@@ -71,41 +77,49 @@ export function ProfileClient() {
 
         {/* Quick Actions */}
         <div className="mt-8 pt-8 border-t border-border grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <Link
-            href="/my-books"
-            className="flex items-center gap-3 rounded-xl border border-border bg-[#FAF7F2] dark:bg-[#111624] p-3.5 text-xs font-semibold text-foreground hover:border-[#E0A526]/50 transition-colors"
-          >
-            <BookMarked className="h-4 w-4 text-[#E0A526]" />
-            <span>My Books</span>
-          </Link>
-          <Link
-            href="/my-borrows"
-            className="flex items-center gap-3 rounded-xl border border-border bg-[#FAF7F2] dark:bg-[#111624] p-3.5 text-xs font-semibold text-foreground hover:border-[#E0A526]/50 transition-colors"
-          >
-            <ArrowLeftRight className="h-4 w-4 text-[#2F7D6D]" />
-            <span>My Borrows</span>
-          </Link>
-          <Link
-            href="/add-book"
-            className="flex items-center gap-3 rounded-xl border border-border bg-[#FAF7F2] dark:bg-[#111624] p-3.5 text-xs font-semibold text-foreground hover:border-[#E0A526]/50 transition-colors"
-          >
-            <Plus className="h-4 w-4 text-amber-500" />
-            <span>Add a Book</span>
-          </Link>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Link
+              href="/my-books"
+              className="flex items-center gap-3 rounded-xl border border-border bg-[#FAF7F2] dark:bg-[#111624] p-3.5 text-xs font-semibold text-foreground hover:border-[#E0A526]/50 transition-colors"
+            >
+              <BookMarked className="h-4 w-4 text-[#E0A526]" />
+              <span>My Books</span>
+            </Link>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Link
+              href="/my-borrows"
+              className="flex items-center gap-3 rounded-xl border border-border bg-[#FAF7F2] dark:bg-[#111624] p-3.5 text-xs font-semibold text-foreground hover:border-[#E0A526]/50 transition-colors"
+            >
+              <ArrowLeftRight className="h-4 w-4 text-[#2F7D6D]" />
+              <span>My Borrows</span>
+            </Link>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Link
+              href="/add-book"
+              className="flex items-center gap-3 rounded-xl border border-border bg-[#FAF7F2] dark:bg-[#111624] p-3.5 text-xs font-semibold text-foreground hover:border-[#E0A526]/50 transition-colors"
+            >
+              <Plus className="h-4 w-4 text-amber-500" />
+              <span>Add a Book</span>
+            </Link>
+          </motion.div>
         </div>
 
         {/* Logout */}
         <div className="mt-6 flex justify-end">
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             type="button"
             onClick={handleLogout}
-            className="inline-flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-2 text-xs font-semibold text-destructive hover:bg-destructive hover:text-white transition-all"
+            className="inline-flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-2 text-xs font-semibold text-destructive hover:bg-destructive hover:text-white transition-colors cursor-pointer"
           >
             <LogOut className="h-3.5 w-3.5" />
             <span>Log out</span>
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "motion/react";
 import { Borrow, API_URL } from "@/types";
 import { authClient } from "@/lib/auth-client";
 import { getTokenFromClient } from "@/lib/get-token-from-client";
@@ -92,11 +93,24 @@ export function BorrowsTable() {
   }
 
   return (
-    <div className="space-y-8">
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="space-y-8"
+    >
       {/* 3 Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         {/* Currently Borrowed */}
-        <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-xs">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-xs cursor-default"
+        >
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#2F7D6D]/15 text-[#2F7D6D]">
             <BookOpen className="h-6 w-6 stroke-[2]" />
           </div>
@@ -108,10 +122,18 @@ export function BorrowsTable() {
               {String(totalBorrowed).padStart(2, "0")}
             </p>
           </div>
-        </div>
+        </motion.div>
 
         {/* Returned Books */}
-        <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-xs">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-xs cursor-default"
+        >
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#E0A526]/15 text-[#E0A526]">
             <CalendarCheck className="h-6 w-6 stroke-[2]" />
           </div>
@@ -123,10 +145,18 @@ export function BorrowsTable() {
               Active
             </p>
           </div>
-        </div>
+        </motion.div>
 
         {/* Due Soon */}
-        <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-xs">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-xs cursor-default"
+        >
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-500">
             <Clock className="h-6 w-6 stroke-[2]" />
           </div>
@@ -138,7 +168,7 @@ export function BorrowsTable() {
               {String(dueSoonCount).padStart(2, "0")}
             </p>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {borrows.length === 0 ? (
@@ -339,7 +369,7 @@ export function BorrowsTable() {
           </div>
         </>
       )}
-    </div>
+    </motion.div>
   );
 }
 

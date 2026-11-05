@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "motion/react";
 import { Book, API_URL } from "@/types";
 import { authClient } from "@/lib/auth-client";
 import { getTokenFromClient } from "@/lib/get-token-from-client";
@@ -111,7 +112,12 @@ export function MyBooksTable() {
   }
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="space-y-6"
+    >
       {/* Desktop Table */}
       <div className="hidden md:block rounded-[20px] border border-border bg-card shadow-sm overflow-hidden">
         <Table>
@@ -287,6 +293,6 @@ export function MyBooksTable() {
           onUpdated={handleBookUpdated}
         />
       )}
-    </div>
+    </motion.div>
   );
 }

@@ -1,3 +1,7 @@
+"use client";
+
+import { motion } from "motion/react";
+
 interface SectionHeadingProps {
   title: string;
   subtitle?: string;
@@ -8,6 +12,7 @@ interface SectionHeadingProps {
 /**
  * Standardized Section Heading component matching the BookNook design system.
  * Features elegant Playfair serif typography, subtle gold line accents, and optional subtitle.
+ * Includes smooth whileInView fade and slide-up animation.
  */
 export function SectionHeading({
   title,
@@ -16,7 +21,13 @@ export function SectionHeading({
   className = "",
 }: SectionHeadingProps) {
   return (
-    <div className={`text-center space-y-2 mb-10 ${className}`}>
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6 }}
+      className={`text-center space-y-2 mb-10 ${className}`}
+    >
       {eyebrow && (
         <span className="inline-block rounded-full bg-[#2F7D6D]/10 px-3.5 py-1 text-xs font-semibold tracking-wider text-[#2F7D6D] uppercase">
           {eyebrow}
@@ -34,7 +45,6 @@ export function SectionHeading({
           {subtitle}
         </p>
       )}
-    </div>
+    </motion.div>
   );
 }
-
