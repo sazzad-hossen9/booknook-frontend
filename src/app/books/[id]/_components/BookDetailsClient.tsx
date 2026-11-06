@@ -3,10 +3,13 @@
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { Book, API_URL } from "@/types";
+import { authClient } from "@/lib/auth-client";
 import { BorrowModal } from "./BorrowModal";
 import { Spinner } from "@/components/Spinner";
+import { toast } from "sonner";
 import {
   Home,
   BookOpen,
@@ -29,6 +32,8 @@ interface BookDetailsClientProps {
  * and controls the borrow modal state.
  */
 export function BookDetailsClient({ id }: BookDetailsClientProps) {
+  const router = useRouter();
+  const { data: session } = authClient.useSession();
   const [book, setBook] = useState<Book | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -192,7 +197,14 @@ export function BookDetailsClient({ id }: BookDetailsClientProps) {
                 whileTap={{ scale: 0.95 }}
                 type="button"
                 disabled={!isAvailable}
-                onClick={() => setIsBorrowModalOpen(true)}
+                onClick={() => {
+                  if (!session?.user) {
+                    toast.error("Please sign in to borrow books");
+                    router.push(`/login?redirect=${encodeURIComponent(`/books/${id}`)}`);
+                    return;
+                  }
+                  setIsBorrowModalOpen(true);
+                }}
                 className="inline-flex h-[46px] items-center justify-center gap-2.5 rounded-xl bg-[#E0A526] px-6 text-sm font-bold text-[#1F2A44] shadow-md transition-colors hover:bg-[#F2C45A] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 <BookOpen className="h-4 w-4 stroke-[2.5]" />

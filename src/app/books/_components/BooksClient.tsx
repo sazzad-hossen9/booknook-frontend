@@ -56,6 +56,14 @@ export function BooksClient() {
     return () => clearTimeout(timer);
   }, [category, search]);
 
+  // Sync category and search query when URL searchParams update
+  useEffect(() => {
+    const urlCat = searchParams.get("category") || "All";
+    const urlSearch = searchParams.get("search") || "";
+    setCategory(urlCat);
+    setSearch(urlSearch);
+  }, [searchParams]);
+
   const handleCategoryChange = (newCat: string) => {
     setCategory(newCat);
     startTransition(() => {

@@ -45,83 +45,91 @@ const slides = [
 ];
 
 /**
- * Hero Banner with Swiper slider, ambient overlays, typography and gold action pill.
- * Features Motion fade in + slide up on load and subtle hover/tap scale on action button.
+ * Responsive Hero Banner with Swiper slider, ambient overlays, typography and gold action pill.
+ * Fades in and slides up on page load (Hero animation specification).
+ * Smooth crossfade slide transitions with pauseOnMouseEnter to prevent jumpy auto-reloading sensations.
  */
 export function Banner() {
   return (
-    <section className="relative mx-auto mt-6 max-w-[1200px] overflow-hidden rounded-[24px] shadow-xl">
-      <Swiper
-        modules={[Autoplay, Pagination, EffectFade]}
-        effect="fade"
-        speed={1000}
-        autoplay={{ delay: 5000, disableOnInteraction: false }}
-        pagination={{ clickable: true }}
-        loop={true}
-        className="h-[440px] sm:h-[500px] md:h-[540px] w-full"
+    <section className="relative mx-auto mt-4 sm:mt-6 w-full max-w-[1200px] px-4 sm:px-6">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="relative w-full overflow-hidden rounded-[20px] sm:rounded-[24px] shadow-xl border border-border/40"
       >
-        {slides.map((slide) => (
-          <SwiperSlide key={slide.id} className="relative h-full w-full">
-            {/* Background Image */}
-            <div className="absolute inset-0">
-              <Image
-                src={slide.image}
-                alt="BookNook Hero"
-                fill
-                priority
-                className="object-cover object-center"
-              />
-              {/* Warm dark gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-r from-[#0F1420]/95 via-[#0F1420]/80 to-transparent sm:w-4/5 md:w-3/5" />
-              <div className="absolute inset-0 bg-black/20" />
-            </div>
+        <Swiper
+          modules={[Autoplay, Pagination, EffectFade]}
+          effect="fade"
+          fadeEffect={{ crossFade: true }}
+          speed={800}
+          autoplay={{
+            delay: 6000,
+            disableOnInteraction: false,
+            pauseOnMouseEnter: true,
+          }}
+          pagination={{ clickable: true }}
+          loop={true}
+          className="h-[390px] sm:h-[480px] md:h-[520px] lg:h-[540px] w-full"
+        >
+          {slides.map((slide) => (
+            <SwiperSlide key={slide.id} className="relative h-full w-full">
+              {/* Background Image */}
+              <div className="absolute inset-0">
+                <Image
+                  src={slide.image}
+                  alt="BookNook Hero"
+                  fill
+                  priority={slide.id === 1}
+                  className="object-cover object-center"
+                />
+                {/* Mobile overlay: covers entire slide for high contrast & perfect readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0F1420]/95 via-[#0F1420]/80 to-[#0F1420]/50 sm:hidden" />
+                {/* Tablet & Desktop overlay: warm dark gradient fading to the right */}
+                <div className="hidden sm:block absolute inset-0 bg-gradient-to-r from-[#0F1420]/95 via-[#0F1420]/85 to-transparent sm:w-4/5 md:w-3/5" />
+                <div className="absolute inset-0 bg-black/25" />
+              </div>
 
-            {/* Slide Content */}
-            <div className="relative z-10 flex h-full flex-col justify-center px-6 sm:px-12 md:px-16 max-w-2xl">
-              <motion.h1
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="font-serif text-4xl sm:text-5xl md:text-[56px] font-bold leading-[1.15] text-[#F3EFE6] drop-shadow-sm"
-              >
-                {slide.titlePrefix}
-                <span className="text-[#E0A526]">{slide.titleHighlight}</span>
-              </motion.h1>
+              {/* Slide Content */}
+              <div className="relative z-10 flex h-full flex-col justify-center px-6 sm:px-12 md:px-16 max-w-2xl pb-10 sm:pb-0">
+                {/* Community lounge badge */}
+                <div className="mb-2 sm:mb-3">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E0A526]/20 border border-[#E0A526]/40 px-3 py-1 text-[11px] sm:text-xs font-semibold text-[#F2C45A] tracking-wider uppercase backdrop-blur-xs">
+                    <BookOpen className="h-3 w-3" />
+                    <span>Community Lounge</span>
+                  </span>
+                </div>
 
-              <motion.p
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-                className="mt-4 text-base sm:text-lg text-[#F3EFE6]/80 leading-relaxed max-w-lg"
-              >
-                {slide.description}
-              </motion.p>
+                <h1 className="font-serif text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-[54px] font-bold leading-tight sm:leading-[1.15] text-[#F3EFE6] drop-shadow-md">
+                  {slide.titlePrefix}
+                  <span className="text-[#E0A526]">{slide.titleHighlight}</span>
+                </h1>
 
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="mt-8 flex items-center gap-4"
-              >
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="inline-block"
-                >
-                  <Link
-                    href={slide.href}
-                    className="inline-flex items-center gap-2.5 rounded-full bg-[#E0A526] px-6 py-3.5 text-sm sm:text-base font-semibold text-[#1F2A44] shadow-lg transition-colors hover:bg-[#F2C45A] hover:shadow-xl"
+                <p className="mt-2.5 sm:mt-4 text-xs sm:text-base md:text-lg text-[#F3EFE6]/85 leading-relaxed max-w-lg line-clamp-3 sm:line-clamp-none">
+                  {slide.description}
+                </p>
+
+                <div className="mt-5 sm:mt-8 flex items-center gap-3 sm:gap-4">
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="inline-block"
                   >
-                    <BookOpen className="h-4 w-4 stroke-[2.5]" />
-                    <span>{slide.btnText}</span>
-                    <ArrowRight className="h-4 w-4 stroke-[2.5]" />
-                  </Link>
-                </motion.div>
-              </motion.div>
-            </div>
-          </SwiperSlide>
-        ))}
-      </Swiper>
+                    <Link
+                      href={slide.href}
+                      className="inline-flex items-center gap-2 sm:gap-2.5 rounded-full bg-[#E0A526] px-5 py-2.5 sm:px-6 sm:py-3.5 text-xs sm:text-sm md:text-base font-semibold text-[#1F2A44] shadow-lg transition-colors hover:bg-[#F2C45A] hover:shadow-xl active:scale-95"
+                    >
+                      <BookOpen className="h-4 w-4 stroke-[2.5]" />
+                      <span>{slide.btnText}</span>
+                      <ArrowRight className="h-4 w-4 stroke-[2.5]" />
+                    </Link>
+                  </motion.div>
+                </div>
+              </div>
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </motion.div>
     </section>
   );
 }

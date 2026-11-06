@@ -45,8 +45,12 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Redirect authenticated user away from login/register to home
-  if (isAuthRoute && hasSessionToken) {
+  // Redirect authenticated user away from login/register to home (unless explicitly redirected with ?redirect)
+  if (
+    isAuthRoute &&
+    hasSessionToken &&
+    !request.nextUrl.searchParams.has("redirect")
+  ) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
