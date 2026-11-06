@@ -6,14 +6,37 @@ import { jwt } from "better-auth/plugins";
 const client = new MongoClient(process.env.MONGODB_URI || "");
 const db = client.db("booknook");
 
+// Dynamically determine canonical baseURL based on environment
+const resolveBaseURL = () => {
+  // In production (Vercel deployment or production build), NEVER use localhost!
+  if (process.env.NODE_ENV === "production") {
+    if (
+      process.env.BETTER_AUTH_URL &&
+      !process.env.BETTER_AUTH_URL.includes("localhost")
+    ) {
+      return process.env.BETTER_AUTH_URL;
+    }
+    if (
+      process.env.NEXT_PUBLIC_APP_URL &&
+      !process.env.NEXT_PUBLIC_APP_URL.includes("localhost")
+    ) {
+      return process.env.NEXT_PUBLIC_APP_URL;
+    }
+    if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+      return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+    }
+    if (process.env.VERCEL_URL) {
+      return `https://${process.env.VERCEL_URL}`;
+    }
+    return "https://booknook-pearl.vercel.app";
+  }
+
+  // Local development
+  return process.env.BETTER_AUTH_URL || "http://localhost:3000";
+};
+
 export const auth = betterAuth({
-  baseURL:
-    process.env.BETTER_AUTH_URL ||
-    (process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "http://localhost:3000"),
+  baseURL: resolveBaseURL(),
   trustedOrigins: [
     "http://localhost:3000",
     "http://localhost:5000",
