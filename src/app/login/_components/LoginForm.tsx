@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
@@ -17,6 +17,19 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+
+  useEffect(() => {
+    const errorParam = searchParams.get("error");
+    if (errorParam) {
+      if (errorParam === "account_not_linked") {
+        toast.error(
+          "This email is already registered. Account linking has been updated, please click Google login again.",
+        );
+      } else {
+        toast.error(`Login error: ${errorParam}`);
+      }
+    }
+  }, [searchParams]);
 
   // Live password validations
   const hasMinLen = password.length >= 6;

@@ -48,6 +48,14 @@ export const auth = betterAuth({
     client,
   }),
   plugins: [jwt()],
+  account: {
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["google"],
+      requireLocalEmailVerified: false,
+      updateUserInfoOnLink: true,
+    },
+  },
   session: {
     cookieCache: {
       enabled: true,
@@ -67,6 +75,7 @@ export const auth = betterAuth({
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      prompt: "select_account",
       enabled: Boolean(
         process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET,
       ),
