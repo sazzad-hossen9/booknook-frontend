@@ -10,8 +10,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowRight, BookOpen } from "lucide-react";
 
 /**
- * New Arrivals section displaying the 6 most recently added books.
- * Includes smooth whileInView section entrance and interactive button scaling.
+ * New Arrivals section displaying the 12 most recently added books.
+ * Includes smooth whileInView section entrance, pixel-perfect skeleton loader,
+ * and interactive button scaling.
  */
 export function NewArrivals() {
   const [books, setBooks] = useState<Book[]>([]);
@@ -20,11 +21,18 @@ export function NewArrivals() {
   useEffect(() => {
     async function loadNewBooks() {
       try {
-        const res = await fetch(`${API_URL}/books?sort=newest&limit=12`, {
+        const res = await fetch(`${API_URL}/books`, {
           cache: "no-store",
         });
         const data = await res.json();
-        setBooks(Array.isArray(data) ? data : []);
+        const list: Book[] = Array.isArray(data) ? data : [];
+        // Sort newest on the frontend
+        list.sort(
+          (a, b) =>
+            new Date(b.addedDate || 0).getTime() -
+            new Date(a.addedDate || 0).getTime()
+        );
+        setBooks(list.slice(0, 12));
       } catch (err) {
         console.error("Failed to load new arrivals:", err);
       } finally {
@@ -49,16 +57,18 @@ export function NewArrivals() {
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {Array.from({ length: 6 }).map((_, i) => (
+          {Array.from({ length: 12 }).map((_, i) => (
             <div
               key={i}
-              className="flex items-center gap-4 rounded-[20px] border border-border bg-card p-4 sm:p-5"
+              className="flex items-center gap-4 rounded-[20px] border border-border bg-card p-4 sm:p-5 shadow-xs"
             >
-              <Skeleton className="h-[135px] w-[100px] shrink-0 rounded-xl" />
-              <div className="flex-1 space-y-2.5">
-                <Skeleton className="h-5 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-                <Skeleton className="h-6 w-20 rounded-full mt-2" />
+              <Skeleton className="aspect-[3/4] w-[95px] sm:w-[105px] shrink-0 rounded-xl" />
+              <div className="flex flex-1 flex-col justify-center min-w-0 pr-1 space-y-2.5">
+                <Skeleton className="h-5 w-4/5 rounded-md" />
+                <Skeleton className="h-3.5 w-1/2 rounded-md" />
+                <div className="pt-1">
+                  <Skeleton className="h-5 w-20 rounded-full" />
+                </div>
               </div>
             </div>
           ))}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "motion/react";
@@ -18,18 +18,27 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   BookOpen,
   CalendarCheck,
   Clock,
   Sparkles,
-  Info,
   ArrowRight,
+  Info,
+  Calendar,
+  ArrowUpDown,
 } from "lucide-react";
 
 /**
- * Borrows Table component matching My-Borrows-Page.png.
- * Features 3 stat cards, full borrows table, mobile card transformation,
- * and immediate state update upon returning a book.
+ * My Borrows Page Table & Cards component.
+ * Features frontend Return Date filtering and sorting using JavaScript array methods (.filter and .sort).
+ * All data is fetched from the backend and managed locally in the client.
  */
 export function BorrowsTable() {
   const { data: session } = authClient.useSession();
@@ -37,6 +46,10 @@ export function BorrowsTable() {
 
   const [borrows, setBorrows] = useState<Borrow[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Frontend Return Date filter and sort states
+  const [dateFilter, setDateFilter] = useState<string>("all");
+  const [dateSort, setDateSort] = useState<string>("soonest");
 
   const loadBorrows = useCallback(async () => {
     if (!user?.email) return;
@@ -48,8 +61,9 @@ export function BorrowsTable() {
         headers["Authorization"] = `Bearer ${token}`;
       }
 
+      // Fetch user's borrows from protected endpoint
       const res = await fetch(
-        `${API_URL}/borrows?email=${encodeURIComponent(user.email)}`,
+        `${API_URL}/my-borrows/${encodeURIComponent(user.email)}`,
         {
           headers,
           cache: "no-store",
@@ -74,14 +88,45 @@ export function BorrowsTable() {
 
   // Stat calculations
   const totalBorrowed = borrows.length;
-  const now = new Date();
+  const currentTime = Date.now();
   const dueSoonCount = borrows.filter((b) => {
     if (!b.returnDate) return false;
     const diffDays =
-      (new Date(b.returnDate).getTime() - now.getTime()) /
+      (new Date(b.returnDate).getTime() - currentTime) /
       (1000 * 60 * 60 * 24);
-    return diffDays <= 3;
+    return diffDays >= 0 && diffDays <= 3;
   }).length;
+
+  // Frontend Return Date filtering and sorting using JS array methods
+  const filteredBorrows = useMemo(() => {
+    let list = [...borrows];
+    const nowMs = Date.now();
+
+    // Filter by Return Date on frontend
+    if (dateFilter === "due-soon") {
+      list = list.filter((b) => {
+        if (!b.returnDate) return false;
+        const diffDays =
+          (new Date(b.returnDate).getTime() - nowMs) /
+          (1000 * 60 * 60 * 24);
+        return diffDays >= 0 && diffDays <= 3;
+      });
+    } else if (dateFilter === "overdue") {
+      list = list.filter((b) => {
+        if (!b.returnDate) return false;
+        return new Date(b.returnDate).getTime() < nowMs;
+      });
+    }
+
+    // Sort by Return Date on frontend
+    list.sort((a, b) => {
+      const dateA = new Date(a.returnDate || 0).getTime();
+      const dateB = new Date(b.returnDate || 0).getTime();
+      return dateSort === "latest" ? dateB - dateA : dateA - dateB;
+    });
+
+    return list;
+  }, [borrows, dateFilter, dateSort]);
 
   if (loading) {
     return (
@@ -155,14 +200,15 @@ export function BorrowsTable() {
           transition={{ duration: 0.5, delay: 0.2 }}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-xs cursor-default"
+          onClick={() => setDateFilter((prev) => (prev === "due-soon" ? "all" : "due-soon"))}
+          className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-xs cursor-pointer hover:border-amber-500/40 transition-colors"
         >
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-500">
             <Clock className="h-6 w-6 stroke-[2]" />
           </div>
           <div>
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Due Soon
+              Due Soon (≤ 3 Days)
             </span>
             <p className="font-serif text-3xl font-bold text-foreground">
               {String(dueSoonCount).padStart(2, "0")}
@@ -194,6 +240,65 @@ export function BorrowsTable() {
         </div>
       ) : (
         <>
+          {/* Frontend Return Date Filter Bar */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-2xl border border-border bg-card p-4 shadow-xs">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Filter by Return Date:
+              </span>
+              <div className="w-44">
+                <Select
+                  value={dateFilter}
+                  onValueChange={(val) => setDateFilter(val || "all")}
+                >
+                  <SelectTrigger className="h-9 w-full rounded-xl border-border text-xs font-medium">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-3.5 w-3.5 text-[#2F7D6D]" />
+                      <SelectValue placeholder="All Dates" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-border bg-card shadow-lg">
+                    <SelectItem value="all" className="cursor-pointer text-xs">
+                      All Return Dates
+                    </SelectItem>
+                    <SelectItem value="due-soon" className="cursor-pointer text-xs">
+                      Due Soon (≤ 3 Days)
+                    </SelectItem>
+                    <SelectItem value="overdue" className="cursor-pointer text-xs">
+                      Overdue
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="w-48">
+                <Select
+                  value={dateSort}
+                  onValueChange={(val) => setDateSort(val || "soonest")}
+                >
+                  <SelectTrigger className="h-9 w-full rounded-xl border-border text-xs font-medium">
+                    <div className="flex items-center gap-2">
+                      <ArrowUpDown className="h-3.5 w-3.5 text-[#E0A526]" />
+                      <SelectValue placeholder="Sort Return Date" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-border bg-card shadow-lg">
+                    <SelectItem value="soonest" className="cursor-pointer text-xs">
+                      Return Date: Soonest First
+                    </SelectItem>
+                    <SelectItem value="latest" className="cursor-pointer text-xs">
+                      Return Date: Latest First
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <p className="text-xs font-medium text-muted-foreground">
+              Showing <span className="font-semibold text-foreground">{filteredBorrows.length}</span> of {borrows.length} records
+            </p>
+          </div>
+
           {/* Desktop Table */}
           <div className="hidden md:block rounded-[20px] border border-border bg-card shadow-sm overflow-hidden">
             <Table>
@@ -220,144 +325,168 @@ export function BorrowsTable() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {borrows.map((borrow) => {
-                  const borrowFormatted = borrow.borrowDate
-                    ? new Date(borrow.borrowDate).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })
-                    : "—";
+                {filteredBorrows.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-10 text-muted-foreground text-sm">
+                      No records match the selected return date filter.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredBorrows.map((borrow) => {
+                    const borrowFormatted = borrow.borrowDate
+                      ? new Date(borrow.borrowDate).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })
+                      : "—";
 
-                  const returnFormatted = borrow.returnDate
-                    ? new Date(borrow.returnDate).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })
-                    : "—";
+                    const returnFormatted = borrow.returnDate
+                      ? new Date(borrow.returnDate).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })
+                      : "—";
 
-                  const isDueSoon =
-                    borrow.returnDate &&
-                    (new Date(borrow.returnDate).getTime() - now.getTime()) /
-                      (1000 * 60 * 60 * 24) <=
-                      3;
+                    const isOverdue =
+                      borrow.returnDate &&
+                      new Date(borrow.returnDate).getTime() < currentTime;
 
-                  return (
-                    <TableRow
-                      key={borrow._id}
-                      className="border-border hover:bg-muted/40 transition-colors"
-                    >
-                      <TableCell>
-                        <div className="relative aspect-[3/4] w-14 overflow-hidden rounded-lg shadow-sm border border-border">
-                          <Image
-                            src={borrow.bookImage}
-                            alt={borrow.bookTitle}
-                            fill
-                            className="object-cover"
+                    const isDueSoon =
+                      borrow.returnDate &&
+                      !isOverdue &&
+                      (new Date(borrow.returnDate).getTime() - currentTime) /
+                        (1000 * 60 * 60 * 24) <=
+                        3;
+
+                    return (
+                      <TableRow
+                        key={borrow._id}
+                        className="border-border hover:bg-muted/40 transition-colors"
+                      >
+                        <TableCell>
+                          <div className="relative aspect-[3/4] w-14 overflow-hidden rounded-lg shadow-sm border border-border">
+                            <Image
+                              src={borrow.bookImage}
+                              alt={borrow.bookTitle}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-serif font-bold text-foreground">
+                          <Link
+                            href={`/books/${borrow.bookId}`}
+                            className="hover:text-[#E0A526] transition-colors"
+                          >
+                            {borrow.bookTitle}
+                          </Link>
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {borrowFormatted}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground font-medium">
+                          {returnFormatted}
+                        </TableCell>
+                        <TableCell>
+                          {isOverdue ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 px-3 py-1 text-xs font-semibold text-red-700 dark:text-red-300">
+                              <Clock className="h-3 w-3" />
+                              Overdue
+                            </span>
+                          ) : isDueSoon ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300">
+                              <Clock className="h-3 w-3" />
+                              Due Soon
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                              Borrowed
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right pr-6">
+                          <ReturnBookButton
+                            borrowId={borrow._id}
+                            bookTitle={borrow.bookTitle}
+                            onReturned={handleReturned}
                           />
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-serif font-bold text-foreground">
-                        <Link
-                          href={`/books/${borrow.bookId}`}
-                          className="hover:text-[#E0A526] transition-colors"
-                        >
-                          {borrow.bookTitle}
-                        </Link>
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {borrowFormatted}
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {returnFormatted}
-                      </TableCell>
-                      <TableCell>
-                        {isDueSoon ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300">
-                            <Clock className="h-3 w-3" />
-                            Due Soon
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                            Borrowed
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right pr-6">
-                        <ReturnBookButton
-                          borrowId={borrow._id}
-                          bookTitle={borrow.bookTitle}
-                          onReturned={handleReturned}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
               </TableBody>
             </Table>
           </div>
 
           {/* Mobile Card Layout */}
           <div className="md:hidden space-y-4">
-            {borrows.map((borrow) => {
-              const borrowFormatted = borrow.borrowDate
-                ? new Date(borrow.borrowDate).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })
-                : "—";
+            {filteredBorrows.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground text-sm rounded-2xl border border-dashed border-border p-4">
+                No records match the selected return date filter.
+              </div>
+            ) : (
+              filteredBorrows.map((borrow) => {
+                const borrowFormatted = borrow.borrowDate
+                  ? new Date(borrow.borrowDate).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  : "—";
 
-              const returnFormatted = borrow.returnDate
-                ? new Date(borrow.returnDate).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })
-                : "—";
+                const returnFormatted = borrow.returnDate
+                  ? new Date(borrow.returnDate).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  : "—";
 
-              return (
-                <div
-                  key={borrow._id}
-                  className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="relative aspect-[3/4] w-16 shrink-0 overflow-hidden rounded-lg shadow-sm border border-border">
-                      <Image
-                        src={borrow.bookImage}
-                        alt={borrow.bookTitle}
-                        fill
-                        className="object-cover"
+                return (
+                  <div
+                    key={borrow._id}
+                    className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="relative aspect-[3/4] w-16 shrink-0 overflow-hidden rounded-lg shadow-sm border border-border">
+                        <Image
+                          src={borrow.bookImage}
+                          alt={borrow.bookTitle}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Link
+                          href={`/books/${borrow.bookId}`}
+                          className="font-serif text-base font-bold text-foreground line-clamp-1 hover:text-[#E0A526]"
+                        >
+                          {borrow.bookTitle}
+                        </Link>
+                        <p className="text-xs text-muted-foreground">
+                          Borrowed: {borrowFormatted}
+                        </p>
+                        <p className="text-xs text-muted-foreground font-medium">
+                          Due: {returnFormatted}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-border pt-3">
+                      <ReturnBookButton
+                        borrowId={borrow._id}
+                        bookTitle={borrow.bookTitle}
+                        onReturned={handleReturned}
                       />
                     </div>
-                    <div className="space-y-1">
-                      <Link
-                        href={`/books/${borrow.bookId}`}
-                        className="font-serif text-base font-bold text-foreground line-clamp-1 hover:text-[#E0A526]"
-                      >
-                        {borrow.bookTitle}
-                      </Link>
-                      <p className="text-xs text-muted-foreground">
-                        Borrowed: {borrowFormatted}
-                      </p>
-                      <p className="text-xs text-muted-foreground font-medium">
-                        Due: {returnFormatted}
-                      </p>
-                    </div>
                   </div>
-
-                  <div className="border-t border-border pt-3">
-                    <ReturnBookButton
-                      borrowId={borrow._id}
-                      bookTitle={borrow.bookTitle}
-                      onReturned={handleReturned}
-                    />
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
 
           {/* Friendly Reminder Banner */}
@@ -372,4 +501,3 @@ export function BorrowsTable() {
     </motion.div>
   );
 }
-

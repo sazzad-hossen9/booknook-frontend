@@ -16,7 +16,7 @@ import {
 import { toast } from "sonner";
 
 /**
- * Interactive Profile component showing user details, avatar, and quick links.
+ * Clean & simple Profile component showing user details, avatar, and quick links.
  */
 export function ProfileClient() {
   const router = useRouter();
@@ -100,24 +100,21 @@ export function ProfileClient() {
               href="/add-book"
               className="flex items-center gap-3 rounded-xl border border-border bg-[#FAF7F2] dark:bg-[#111624] p-3.5 text-xs font-semibold text-foreground hover:border-[#E0A526]/50 transition-colors"
             >
-              <Plus className="h-4 w-4 text-amber-500" />
+              <Plus className="h-4 w-4 text-[#E0A526]" />
               <span>Add a Book</span>
             </Link>
           </motion.div>
         </div>
 
-        {/* Logout */}
-        <div className="mt-6 flex justify-end">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            type="button"
+        {/* Sign Out Button */}
+        <div className="mt-6 pt-6 border-t border-border flex justify-center sm:justify-end">
+          <button
             onClick={handleLogout}
-            className="inline-flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-2 text-xs font-semibold text-destructive hover:bg-destructive hover:text-white transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer"
           >
-            <LogOut className="h-3.5 w-3.5" />
-            <span>Log out</span>
-          </motion.button>
+            <LogOut className="h-4 w-4" />
+            <span>Sign Out</span>
+          </button>
         </div>
       </motion.div>
     </div>

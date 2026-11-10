@@ -83,10 +83,15 @@ export function EditBookModal({
 
       toast.loading("Updating book details...", { id: "edit-progress" });
       const token = await getTokenFromClient();
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
+      if (!token) {
+        toast.error("Your session has expired. Please sign in again.", { id: "edit-progress" });
+        setSaving(false);
+        return;
       }
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
 
       const res = await fetch(`${API_URL}/books/${book._id}`, {
         method: "PATCH",

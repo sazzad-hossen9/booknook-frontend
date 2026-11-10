@@ -27,10 +27,14 @@ export function ReturnBookButton({
     setLoading(true);
     try {
       const token = await getTokenFromClient();
-      const headers: Record<string, string> = {};
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
+      if (!token) {
+        toast.error("Your session has expired. Please sign in again.");
+        setLoading(false);
+        return;
       }
+      const headers: Record<string, string> = {
+        Authorization: `Bearer ${token}`,
+      };
 
       const res = await fetch(`${API_URL}/borrows/${borrowId}`, {
         method: "DELETE",

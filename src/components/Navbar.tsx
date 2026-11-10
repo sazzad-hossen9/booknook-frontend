@@ -32,10 +32,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-/**
- * Floating rounded Navbar with cozy modern lounge styling.
- * Handles responsive drawer, theme switch, auth state, and active navigation indicators.
- */
+
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();

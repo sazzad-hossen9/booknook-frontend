@@ -2,7 +2,6 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { motion } from "motion/react";
 import { authClient } from "@/lib/auth-client";
 import { API_URL } from "@/types";
@@ -115,10 +114,14 @@ export function AddBookForm() {
       // Step 2: Post to backend with the hosted image URL and JWT
       toast.loading("Adding book to library...", { id: "add-book-progress" });
       const token = await getTokenFromClient();
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
+      if (!token) {
+        toast.error("Your session has expired. Please sign in again.", { id: "add-book-progress" });
+        return;
       }
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
 
       const res = await fetch(`${API_URL}/books`, {
         method: "POST",
@@ -327,7 +330,7 @@ export function AddBookForm() {
                 name="imageUrl"
                 value={imageUrlInput}
                 onChange={handleUrlChange}
-                placeholder="https://images.unsplash.com/... or hosted image URL"
+                placeholder="https://images.***.com/... or hosted image URL"
                 className="h-[40px] w-full rounded-xl border border-border bg-card px-3 text-xs text-foreground outline-none focus:border-[#E0A526] transition-colors placeholder:text-muted-foreground"
               />
             </div>

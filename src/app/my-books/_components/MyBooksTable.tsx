@@ -44,7 +44,7 @@ export function MyBooksTable() {
       }
 
       const res = await fetch(
-        `${API_URL}/books?email=${encodeURIComponent(user.email)}&sort=newest`,
+        `${API_URL}/my-books/${encodeURIComponent(user.email)}`,
         {
           headers,
           cache: "no-store",

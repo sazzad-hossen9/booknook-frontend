@@ -54,10 +54,16 @@ export function BorrowModal({
     setSubmitting(true);
     try {
       const token = await getTokenFromClient();
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
+      if (!token) {
+        toast.error("Your session has expired. Please sign in again.");
+        setSubmitting(false);
+        return;
       }
+
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
 
       const res = await fetch(`${API_URL}/borrows`, {
         method: "POST",

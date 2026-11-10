@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState, useMemo, useTransition } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { Book, API_URL } from "@/types";
@@ -11,7 +11,8 @@ import { BookX } from "lucide-react";
 
 /**
  * Interactive client component for the All Books page.
- * Manages search, category selection, query sync, and responsive book grid.
+ * Fetches all books from the backend once. All Search, Category Filtering,
+ * and Sorting are performed purely on the client side using JavaScript array methods.
  */
 export function BooksClient() {
   const router = useRouter();
@@ -19,75 +20,111 @@ export function BooksClient() {
 
   const initialCategory = searchParams.get("category") || "All";
   const initialSearch = searchParams.get("search") || "";
+  const initialSort = searchParams.get("sort") || "newest";
 
   const [category, setCategory] = useState(initialCategory);
   const [search, setSearch] = useState(initialSearch);
-  const [books, setBooks] = useState<Book[]>([]);
+  const [sort, setSort] = useState(initialSort);
+  const [allBooks, setAllBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
   const [, startTransition] = useTransition();
 
+  // Fetch all books from the backend once on mount (no search/filter query params sent to backend)
   useEffect(() => {
-    async function loadBooks() {
+    async function fetchBooks() {
       setLoading(true);
       try {
-        const query = new URLSearchParams({ sort: "newest" });
-        if (category !== "All") query.set("category", category);
-        if (search.trim()) query.set("search", search.trim());
-
-        const res = await fetch(`${API_URL}/books?${query.toString()}`, {
+        const res = await fetch(`${API_URL}/books`, {
           cache: "no-store",
         });
         const data = await res.json();
-        const list: Book[] = Array.isArray(data) ? data : [];
-        list.sort(
-          (a, b) =>
-            new Date(b.addedDate || 0).getTime() -
-            new Date(a.addedDate || 0).getTime()
-        );
-        setBooks(list);
+        setAllBooks(Array.isArray(data) ? data : []);
       } catch (err) {
-        console.error("Failed to fetch books:", err);
+        console.error("Failed to fetch books from backend:", err);
       } finally {
         setLoading(false);
       }
     }
 
-    const timer = setTimeout(loadBooks, 250);
-    return () => clearTimeout(timer);
-  }, [category, search]);
+    fetchBooks();
+  }, []);
 
-  // Sync category and search query when URL searchParams update
+  // Sync state if URL query params change externally
   useEffect(() => {
     const urlCat = searchParams.get("category") || "All";
     const urlSearch = searchParams.get("search") || "";
+    const urlSort = searchParams.get("sort") || "newest";
     setCategory(urlCat);
     setSearch(urlSearch);
+    setSort(urlSort);
   }, [searchParams]);
+
+  // Frontend Search, Category Filter, and Sorting using JS array methods
+  const filteredBooks = useMemo(() => {
+    let result = [...allBooks];
+
+    // 1. Search by book title on frontend
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      result = result.filter((book) =>
+        book.title?.toLowerCase().includes(q)
+      );
+    }
+
+    // 2. Category filtering on frontend
+    if (category && category !== "All") {
+      result = result.filter(
+        (book) => book.category?.toLowerCase() === category.toLowerCase()
+      );
+    }
+
+    // 3. Sorting on frontend (Newest / Oldest)
+    result.sort((a, b) => {
+      const dateA = new Date(a.addedDate || 0).getTime();
+      const dateB = new Date(b.addedDate || 0).getTime();
+
+      if (sort === "oldest") {
+        return dateA - dateB;
+      }
+      // default: newest
+      return dateB - dateA;
+    });
+
+    return result;
+  }, [allBooks, search, category, sort]);
+
+  const updateUrlParams = (newCat: string, newSearch: string, newSort: string) => {
+    startTransition(() => {
+      const params = new URLSearchParams();
+      if (newCat && newCat !== "All") params.set("category", newCat);
+      if (newSearch) params.set("search", newSearch);
+      if (newSort && newSort !== "newest") params.set("sort", newSort);
+
+      const qs = params.toString();
+      router.replace(qs ? `/books?${qs}` : "/books", { scroll: false });
+    });
+  };
 
   const handleCategoryChange = (newCat: string) => {
     setCategory(newCat);
-    startTransition(() => {
-      const params = new URLSearchParams(window.location.search);
-      if (newCat && newCat !== "All") {
-        params.set("category", newCat);
-      } else {
-        params.delete("category");
-      }
-      router.replace(`/books?${params.toString()}`, { scroll: false });
-    });
+    updateUrlParams(newCat, search, sort);
   };
 
   const handleSearchChange = (newSearch: string) => {
     setSearch(newSearch);
-    startTransition(() => {
-      const params = new URLSearchParams(window.location.search);
-      if (newSearch) {
-        params.set("search", newSearch);
-      } else {
-        params.delete("search");
-      }
-      router.replace(`/books?${params.toString()}`, { scroll: false });
-    });
+    updateUrlParams(category, newSearch, sort);
+  };
+
+  const handleSortChange = (newSort: string) => {
+    setSort(newSort);
+    updateUrlParams(category, search, newSort);
+  };
+
+  const handleResetFilters = () => {
+    setCategory("All");
+    setSearch("");
+    setSort("newest");
+    router.replace("/books", { scroll: false });
   };
 
   return (
@@ -110,12 +147,14 @@ export function BooksClient() {
         </p>
       </motion.div>
 
-      {/* Search & Filter Bar */}
+      {/* Search, Filter & Sort Bar */}
       <BookFilter
         search={search}
         onSearchChange={handleSearchChange}
         category={category}
         onCategoryChange={handleCategoryChange}
+        sort={sort}
+        onSortChange={handleSortChange}
       />
 
       {/* Results Header */}
@@ -123,17 +162,13 @@ export function BooksClient() {
         <p className="text-sm font-medium text-muted-foreground">
           Showing{" "}
           <span className="font-semibold text-foreground">
-            {loading ? "..." : books.length}
+            {loading ? "..." : filteredBooks.length}
           </span>{" "}
           books
         </p>
-        {(category !== "All" || search) && (
+        {(category !== "All" || search || sort !== "newest") && (
           <button
-            onClick={() => {
-              setCategory("All");
-              setSearch("");
-              router.replace("/books", { scroll: false });
-            }}
+            onClick={handleResetFilters}
             className="text-xs font-semibold text-[#E0A526] hover:underline"
           >
             Reset Filters
@@ -149,35 +184,36 @@ export function BooksClient() {
               key={i}
               className="flex h-[380px] flex-col rounded-[16px] border border-border bg-card p-5"
             >
-              <Skeleton className="h-[220px] w-full rounded-xl" />
-              <div className="mt-4 space-y-2">
-                <Skeleton className="h-5 w-3/4 mx-auto" />
-                <Skeleton className="h-4 w-1/2 mx-auto" />
-                <Skeleton className="h-6 w-20 mx-auto rounded-full" />
+              <Skeleton className="h-[200px] w-full rounded-xl" />
+              <div className="mt-4 flex-1 space-y-2">
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-10 w-full rounded-xl mt-4" />
               </div>
-              <Skeleton className="mt-auto h-11 w-full rounded-[12px]" />
             </div>
           ))}
         </div>
-      ) : books.length > 0 ? (
+      ) : filteredBooks.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {books.map((book) => (
+          {filteredBooks.map((book) => (
             <BookCard key={book._id} book={book} />
           ))}
         </div>
       ) : (
-        <div className="text-center py-20 rounded-2xl border border-dashed border-border bg-card p-8">
+        <div className="text-center py-16 rounded-2xl border border-dashed border-border bg-card p-8">
           <BookX className="mx-auto h-12 w-12 text-muted-foreground/50" />
-          <h3 className="mt-4 text-lg font-semibold text-foreground">
-            No books found
-          </h3>
+          <h3 className="mt-4 text-base font-semibold">No books match your filters</h3>
           <p className="mt-1 text-sm text-muted-foreground max-w-sm mx-auto">
-            We couldn&apos;t find any books matching your criteria. Try adjusting your
-            search terms or selecting a different category.
+            Try adjusting your search title, picking a different category, or resetting all filters.
           </p>
+          <button
+            onClick={handleResetFilters}
+            className="mt-6 rounded-xl bg-[#E0A526] px-5 py-2.5 text-sm font-semibold text-[#1F2A44] hover:bg-[#F2C45A] transition-colors"
+          >
+            Reset Filters
+          </button>
         </div>
       )}
     </div>
   );
 }
-

@@ -2,47 +2,18 @@ import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
 import { jwt } from "better-auth/plugins";
+import { sendPasswordResetEmail, sendVerificationEmail } from "./email";
 
 const client = new MongoClient(process.env.MONGODB_URI || "");
 const db = client.db("booknook");
 
-// Dynamically determine canonical baseURL based on environment
-const resolveBaseURL = () => {
-  // In production (Vercel deployment or production build), NEVER use localhost!
-  if (process.env.NODE_ENV === "production") {
-    if (
-      process.env.BETTER_AUTH_URL &&
-      !process.env.BETTER_AUTH_URL.includes("localhost")
-    ) {
-      return process.env.BETTER_AUTH_URL;
-    }
-    if (
-      process.env.NEXT_PUBLIC_APP_URL &&
-      !process.env.NEXT_PUBLIC_APP_URL.includes("localhost")
-    ) {
-      return process.env.NEXT_PUBLIC_APP_URL;
-    }
-    if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
-      return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
-    }
-    if (process.env.VERCEL_URL) {
-      return `https://${process.env.VERCEL_URL}`;
-    }
-    return "https://booknook-pearl.vercel.app";
-  }
-
-  // Local development
-  return process.env.BETTER_AUTH_URL || "http://localhost:3000";
-};
-
 export const auth = betterAuth({
-  baseURL: resolveBaseURL(),
+  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
   trustedOrigins: [
     "http://localhost:3000",
     "http://localhost:5000",
-    "https://booknook-sazzad-hossen.vercel.app",
     "https://booknook-pearl.vercel.app",
-    "https://*.vercel.app",
+    "https://booknook-backend-vert.vercel.app",
   ],
   database: mongodbAdapter(db, {
     client,
@@ -66,9 +37,22 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     sendResetPassword: async ({ user, url }) => {
-      console.log(
-        `[BookNook Auth] Password reset requested for ${user.email}: ${url}`,
-      );
+      await sendPasswordResetEmail({
+        to: user.email,
+        userName: user.name,
+        resetUrl: url,
+      });
+    },
+  },
+  emailVerification: {
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
+    sendVerificationEmail: async ({ user, url }) => {
+      await sendVerificationEmail({
+        to: user.email,
+        userName: user.name,
+        verificationUrl: url,
+      });
     },
   },
   socialProviders: {

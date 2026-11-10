@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,6 +16,7 @@ import {
   UserPlus,
   Link as LinkIcon,
   Check,
+  CheckCircle2,
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -57,11 +57,11 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
  * Google OAuth, and automatic redirection to /login.
  */
 export function RegisterForm() {
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
 
   const {
     register,
@@ -101,12 +101,10 @@ export function RegisterForm() {
         return;
       }
 
-      toast.success(
-        "Account created successfully! Welcome to BookNook.",
-        { id: "register-task" }
-      );
-      router.push("/");
-      router.refresh();
+      toast.success("Account created! Please check your email to verify.", {
+        id: "register-task",
+      });
+      setRegisteredEmail(data.email);
     } catch (err: any) {
       toast.error(err?.message || "Failed to register. Please try again.", {
         id: "register-task",
@@ -129,6 +127,45 @@ export function RegisterForm() {
       setGoogleLoading(false);
     }
   };
+
+  if (registeredEmail) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="w-full max-w-md mx-auto space-y-6 text-center"
+      >
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-500 border border-emerald-500/30">
+          <CheckCircle2 className="h-8 w-8 stroke-[2.2]" />
+        </div>
+
+        <div className="space-y-2">
+          <h2 className="font-serif text-3xl font-bold tracking-tight text-foreground">
+            Check your inbox
+          </h2>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            We have sent a verification link to:
+          </p>
+          <p className="font-semibold text-foreground text-sm bg-muted/60 py-1.5 px-3 rounded-lg inline-block break-all border border-border">
+            {registeredEmail}
+          </p>
+          <p className="text-xs text-muted-foreground pt-2">
+            Click the link in the email to verify your BookNook account and activate full access.
+          </p>
+        </div>
+
+        <div className="pt-2 space-y-3">
+          <Link
+            href="/login"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#E0A526] px-4 py-3 text-sm font-semibold text-[#1F2A44] shadow-sm hover:bg-[#F2C45A] transition-colors"
+          >
+            <span>Proceed to Sign In</span>
+          </Link>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
@@ -259,7 +296,7 @@ export function RegisterForm() {
             <Lock className="absolute left-3.5 h-4 w-4 text-muted-foreground" />
             <input
               type={showConfirmPassword ? "text" : "password"}
-              placeholder="••••••••••••"
+              placeholder="confirmPassword"
               {...register("confirmPassword")}
               className="h-[46px] w-full rounded-xl border border-border bg-card pl-10 pr-10 text-sm text-foreground outline-none focus:border-[#E0A526] focus:ring-2 focus:ring-[#E0A526]/20 placeholder:text-muted-foreground"
             />
